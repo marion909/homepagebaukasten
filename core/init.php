@@ -7,4 +7,6 @@ require_once __DIR__ . '/blog-comment.php';
 require_once __DIR__ . '/blog-category.php';
 require_once __DIR__ . '/blog-tag.php';
 require_once __DIR__ . '/shortcodes.php';
+require_once __DIR__ . '/sitemap.php';
+require_once __DIR__ . '/rss.php';
 require_once __DIR__ . '/auth.php';

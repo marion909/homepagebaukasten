@@ -132,6 +132,7 @@ $mediaFiles = $db->fetchAll("SELECT * FROM media ORDER BY created_at DESC");
             <li><a href="pages.php">Seiten</a></li>
             <li><a href="media.php" class="active">Medien</a></li>
             <li><a href="comments.php">Kommentare</a></li>
+            <li><a href="seo.php">SEO & Feeds</a></li>
             <li><a href="settings.php">Einstellungen</a></li>
         </ul>
     </nav>
