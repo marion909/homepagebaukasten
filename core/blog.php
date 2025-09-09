@@ -6,11 +6,22 @@ class Blog {
         self::$db = Database::getInstance();
     }
     
-    public static function getAll($status = 'published', $limit = null) {
+    public static function getAll($status = 'published', $limit = null, $category_id = null) {
         if (!self::$db) self::init();
         
-        $sql = "SELECT * FROM blog_posts WHERE status = ? ORDER BY created_at DESC";
-        $params = [$status];
+        $sql = "SELECT bp.* FROM blog_posts bp";
+        $params = [];
+        
+        if ($category_id) {
+            $sql .= " JOIN blog_post_categories bpc ON bp.id = bpc.post_id";
+            $sql .= " WHERE bp.status = ? AND bpc.category_id = ?";
+            $params = [$status, $category_id];
+        } else {
+            $sql .= " WHERE status = ?";
+            $params = [$status];
+        }
+        
+        $sql .= " ORDER BY created_at DESC";
         
         if ($limit) {
             // LIMIT als Teil der SQL-Query hinzufügen (sicher, da wir (int) casten)
@@ -72,6 +83,66 @@ class Blog {
         if (!self::$db) self::init();
         
         return self::$db->query("DELETE FROM blog_posts WHERE id = ?", [$id]);
+    }
+    
+    public static function getByCategory($category_slug, $status = 'published', $limit = null) {
+        if (!self::$db) self::init();
+        
+        $sql = "SELECT bp.* 
+                FROM blog_posts bp
+                JOIN blog_post_categories bpc ON bp.id = bpc.post_id
+                JOIN blog_categories bc ON bpc.category_id = bc.id
+                WHERE bp.status = ? AND bc.slug = ?
+                ORDER BY bp.created_at DESC";
+        
+        $params = [$status, $category_slug];
+        
+        if ($limit) {
+            $sql .= " LIMIT " . (int)$limit;
+        }
+        
+        return self::$db->fetchAll($sql, $params);
+    }
+    
+    public static function getByTag($tag_slug, $status = 'published', $limit = null) {
+        if (!self::$db) self::init();
+        
+        $sql = "SELECT bp.* 
+                FROM blog_posts bp
+                JOIN blog_post_tags bpt ON bp.id = bpt.post_id
+                JOIN blog_tags bt ON bpt.tag_id = bt.id
+                WHERE bp.status = ? AND bt.slug = ?
+                ORDER BY bp.created_at DESC";
+        
+        $params = [$status, $tag_slug];
+        
+        if ($limit) {
+            $sql .= " LIMIT " . (int)$limit;
+        }
+        
+        return self::$db->fetchAll($sql, $params);
+    }
+    
+    public static function search($query, $status = 'published', $limit = null) {
+        if (!self::$db) self::init();
+        
+        $sql = "SELECT bp.* 
+                FROM blog_posts bp
+                WHERE bp.status = ? AND (
+                    bp.title LIKE ? OR 
+                    bp.excerpt LIKE ? OR 
+                    bp.content LIKE ?
+                )
+                ORDER BY bp.created_at DESC";
+        
+        $searchTerm = '%' . $query . '%';
+        $params = [$status, $searchTerm, $searchTerm, $searchTerm];
+        
+        if ($limit) {
+            $sql .= " LIMIT " . (int)$limit;
+        }
+        
+        return self::$db->fetchAll($sql, $params);
     }
     
     public static function generateSlug($title) {

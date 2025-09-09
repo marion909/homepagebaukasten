@@ -11,8 +11,10 @@ class Shortcodes {
         
         // Process shortcodes
         $content = preg_replace_callback('/\[contact_form\]/', [self::class, 'contactForm'], $content);
-        $content = preg_replace_callback('/\[blog_list(?:\s+limit="(\d+)")?\]/', [self::class, 'blogList'], $content);
+        $content = preg_replace_callback('/\[blog_list(?:\s+limit="(\d+)")?(?:\s+category="([^"]+)")?\]/', [self::class, 'blogList'], $content);
         $content = preg_replace_callback('/\[blog_comments(?:\s+post_id="(\d+)")?\]/', [self::class, 'blogComments'], $content);
+        $content = preg_replace_callback('/\[blog_categories\]/', [self::class, 'blogCategoriesList'], $content);
+        $content = preg_replace_callback('/\[blog_tags(?:\s+limit="(\d+)")?\]/', [self::class, 'blogTagCloud'], $content);
         
         return $content;
     }
@@ -92,23 +94,67 @@ class Shortcodes {
     
     public static function blogList($matches) {
         $limit = isset($matches[1]) ? (int)$matches[1] : 5;
-        $posts = Blog::getAll('published', $limit);
+        $category = isset($matches[2]) ? $matches[2] : null;
+        
+        // Get posts by category or all posts
+        if ($category) {
+            $posts = Blog::getByCategory($category, 'published', $limit);
+            $categoryData = BlogCategory::getBySlug($category);
+            $title = $categoryData ? 'Blog - ' . $categoryData['name'] : 'Blog';
+        } else {
+            $posts = Blog::getAll('published', $limit);
+            $title = 'Blog';
+        }
         
         ob_start();
         ?>
         <div class="blog-list">
+            <?php if ($category && isset($categoryData)): ?>
+                <div class="blog-category-header">
+                    <h2><?= htmlspecialchars($categoryData['name']) ?></h2>
+                    <?php if (!empty($categoryData['description'])): ?>
+                        <p class="category-description"><?= htmlspecialchars($categoryData['description']) ?></p>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+            
             <?php if (empty($posts)): ?>
-                <p>Noch keine Blog-Beiträge vorhanden.</p>
+                <p>Noch keine Blog-Beiträge vorhanden<?= $category ? ' in dieser Kategorie' : '' ?>.</p>
             <?php else: ?>
                 <?php foreach ($posts as $post): ?>
                     <article class="blog-post-preview">
                         <h3><a href="/blog/<?= htmlspecialchars($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a></h3>
                         <div class="blog-meta">
                             <time><?= date('d.m.Y', strtotime($post['created_at'])) ?></time>
+                            
+                            <?php 
+                            $postCategories = BlogCategory::getByPostId($post['id']);
+                            if (!empty($postCategories)): ?>
+                                <span class="categories">
+                                    <?php foreach ($postCategories as $cat): ?>
+                                        <a href="/blog/category/<?= htmlspecialchars($cat['slug']) ?>" class="category-link">
+                                            <?= htmlspecialchars($cat['name']) ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </span>
+                            <?php endif; ?>
                         </div>
                         <?php if (!empty($post['excerpt'])): ?>
                             <p class="blog-excerpt"><?= htmlspecialchars($post['excerpt']) ?></p>
                         <?php endif; ?>
+                        
+                        <?php 
+                        $postTags = BlogTag::getByPostId($post['id']);
+                        if (!empty($postTags)): ?>
+                            <div class="blog-tags">
+                                <?php foreach ($postTags as $tag): ?>
+                                    <a href="/blog/tag/<?= htmlspecialchars($tag['slug']) ?>" class="tag-link">
+                                        #<?= htmlspecialchars($tag['name']) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        
                         <a href="/blog/<?= htmlspecialchars($post['slug']) ?>" class="read-more">Weiterlesen →</a>
                     </article>
                 <?php endforeach; ?>
@@ -286,6 +332,63 @@ class Shortcodes {
             }
         });
         </script>
+        <?php
+        return ob_get_clean();
+    }
+    
+    public static function blogCategoriesList($matches) {
+        $categories = BlogCategory::getWithPostCount();
+        
+        ob_start();
+        ?>
+        <div class="blog-categories-list">
+            <h3>Kategorien</h3>
+            <?php if (empty($categories)): ?>
+                <p>Noch keine Kategorien vorhanden.</p>
+            <?php else: ?>
+                <ul class="categories-list">
+                    <?php foreach ($categories as $category): ?>
+                        <?php if ($category['post_count'] > 0): ?>
+                            <li>
+                                <a href="/blog/category/<?= htmlspecialchars($category['slug']) ?>">
+                                    <?= htmlspecialchars($category['name']) ?>
+                                    <span class="post-count">(<?= $category['post_count'] ?>)</span>
+                                </a>
+                                <?php if (!empty($category['description'])): ?>
+                                    <small class="category-description"><?= htmlspecialchars($category['description']) ?></small>
+                                <?php endif; ?>
+                            </li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+    
+    public static function blogTagCloud($matches) {
+        $limit = isset($matches[1]) ? (int)$matches[1] : 20;
+        $tags = BlogTag::getPopular($limit);
+        
+        ob_start();
+        ?>
+        <div class="blog-tag-cloud">
+            <h3>Tags</h3>
+            <?php if (empty($tags)): ?>
+                <p>Noch keine Tags vorhanden.</p>
+            <?php else: ?>
+                <div class="tag-cloud">
+                    <?php foreach ($tags as $tag): ?>
+                        <a href="/blog/tag/<?= htmlspecialchars($tag['slug']) ?>" 
+                           class="tag-cloud-item"
+                           style="font-size: <?= min(1.5, 0.8 + ($tag['usage_count'] * 0.1)) ?>rem;">
+                            <?= htmlspecialchars($tag['name']) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
         <?php
         return ob_get_clean();
     }
