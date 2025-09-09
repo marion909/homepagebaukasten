@@ -1,15 +1,7 @@
 <?php
 require_once "../core/init.php";
 
-$auth =    <nav class="nav">
-        <ul>
-            <li><a href="index.php" class="active">Dashboard</a></li>
-            <li><a href="pages.php">Seiten</a></li>
-            <li><a href="media.php">Medien</a></li>
-            <li><a href="comments.php">Kommentare</a></li>
-            <li><a href="settings.php">Einstellungen</a></li>
-        </ul>
-    </nav>h();
+$auth = new Auth();
 $auth->requireLogin();
 
 $db = Database::getInstance();
