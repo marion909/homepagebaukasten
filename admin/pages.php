@@ -143,7 +143,7 @@ $pages = Page::getAll();
     </style>
     
     <!-- TinyMCE Editor -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/<?php echo TINYMCE_API_KEY; ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 <body>
     <div class="header">
@@ -205,7 +205,7 @@ $pages = Page::getAll();
                                 <td>
                                     <div class="actions">
                                         <a href="pages.php?action=edit&id=<?= $page['id'] ?>" class="btn btn-small">Bearbeiten</a>
-                                        <a href="../public/?page=<?= htmlspecialchars($page['slug']) ?>" target="_blank" class="btn btn-secondary btn-small">Anzeigen</a>
+                                        <a href="/<?= htmlspecialchars($page['slug']) ?>" target="_blank" class="btn btn-secondary btn-small">Anzeigen</a>
                                         <a href="pages.php?action=delete&id=<?= $page['id'] ?>" 
                                            class="btn btn-danger btn-small"
                                            onclick="return confirm('Seite wirklich löschen?')">Löschen</a>
