@@ -12,6 +12,7 @@ class Shortcodes {
         // Process shortcodes
         $content = preg_replace_callback('/\[contact_form\]/', [self::class, 'contactForm'], $content);
         $content = preg_replace_callback('/\[blog_list(?:\s+limit="(\d+)")?\]/', [self::class, 'blogList'], $content);
+        $content = preg_replace_callback('/\[blog_comments(?:\s+post_id="(\d+)")?\]/', [self::class, 'blogComments'], $content);
         
         return $content;
     }
@@ -101,14 +102,14 @@ class Shortcodes {
             <?php else: ?>
                 <?php foreach ($posts as $post): ?>
                     <article class="blog-post-preview">
-                        <h3><a href="?page=blog&post=<?= htmlspecialchars($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a></h3>
+                        <h3><a href="/blog/<?= htmlspecialchars($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a></h3>
                         <div class="blog-meta">
                             <time><?= date('d.m.Y', strtotime($post['created_at'])) ?></time>
                         </div>
                         <?php if (!empty($post['excerpt'])): ?>
                             <p class="blog-excerpt"><?= htmlspecialchars($post['excerpt']) ?></p>
                         <?php endif; ?>
-                        <a href="?page=blog&post=<?= htmlspecialchars($post['slug']) ?>" class="read-more">Weiterlesen →</a>
+                        <a href="/blog/<?= htmlspecialchars($post['slug']) ?>" class="read-more">Weiterlesen →</a>
                     </article>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -124,5 +125,168 @@ class Shortcodes {
             $settings[$row['setting_key']] = $row['setting_value'];
         }
         return $settings;
+    }
+    
+    public static function blogComments($matches) {
+        // Get post_id from URL or shortcode parameter
+        $post_id = null;
+        
+        if (isset($matches[1]) && is_numeric($matches[1])) {
+            $post_id = (int)$matches[1];
+        } elseif (isset($_GET['post'])) {
+            // Get post ID from current blog post
+            $post_slug = $_GET['post'];
+            $post = Blog::getBySlug($post_slug);
+            if ($post) {
+                $post_id = $post['id'];
+            }
+        }
+        
+        if (!$post_id) {
+            return '<p>Kommentare können nur bei Blog-Beiträgen angezeigt werden.</p>';
+        }
+        
+        $message = '';
+        $error = '';
+        
+        // Handle comment submission
+        if ($_POST && isset($_POST['comment_submit']) && isset($_POST['post_id']) && $_POST['post_id'] == $post_id) {
+            $author_name = trim($_POST['author_name'] ?? '');
+            $author_email = trim($_POST['author_email'] ?? '');
+            $content = trim($_POST['content'] ?? '');
+            
+            // Validation
+            if (empty($author_name) || empty($author_email) || empty($content)) {
+                $error = 'Bitte füllen Sie alle Felder aus.';
+            } elseif (!filter_var($author_email, FILTER_VALIDATE_EMAIL)) {
+                $error = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+            } elseif (strlen($content) < 10) {
+                $error = 'Der Kommentar muss mindestens 10 Zeichen lang sein.';
+            } elseif (strlen($content) > 1000) {
+                $error = 'Der Kommentar darf maximal 1000 Zeichen lang sein.';
+            } else {
+                // Basic spam protection
+                $spam_words = ['viagra', 'casino', 'lottery', 'winner', 'congratulations'];
+                $content_lower = strtolower($content);
+                $is_spam = false;
+                
+                foreach ($spam_words as $spam_word) {
+                    if (strpos($content_lower, $spam_word) !== false) {
+                        $is_spam = true;
+                        break;
+                    }
+                }
+                
+                // Create comment
+                $comment_data = [
+                    'post_id' => $post_id,
+                    'author_name' => $author_name,
+                    'author_email' => $author_email,
+                    'content' => $content,
+                    'status' => $is_spam ? 'spam' : 'pending'
+                ];
+                
+                try {
+                    BlogComment::create($comment_data);
+                    $message = 'Vielen Dank für Ihren Kommentar! Er wird nach Prüfung freigeschaltet.';
+                    
+                    // Clear form data on success
+                    $_POST = [];
+                } catch (Exception $e) {
+                    $error = 'Fehler beim Speichern des Kommentars. Bitte versuchen Sie es später erneut.';
+                }
+            }
+        }
+        
+        // Get approved comments
+        $comments = BlogComment::getByPostId($post_id, 'approved');
+        
+        ob_start();
+        ?>
+        <div class="blog-comments">
+            <h3>Kommentare (<?= count($comments) ?>)</h3>
+            
+            <!-- Existing Comments -->
+            <?php if (empty($comments)): ?>
+                <p class="no-comments">Noch keine Kommentare vorhanden. Seien Sie der Erste!</p>
+            <?php else: ?>
+                <div class="comments-list">
+                    <?php foreach ($comments as $comment): ?>
+                        <div class="comment">
+                            <div class="comment-header">
+                                <strong class="comment-author"><?= htmlspecialchars($comment['author_name']) ?></strong>
+                                <time class="comment-date"><?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?></time>
+                            </div>
+                            <div class="comment-content">
+                                <?= nl2br(htmlspecialchars($comment['content'])) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Comment Form -->
+            <div class="comment-form-section">
+                <h4>Kommentar hinterlassen</h4>
+                
+                <?php if ($message): ?>
+                    <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
+                <?php endif; ?>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+                <?php endif; ?>
+                
+                <?php if (!$message): ?>
+                    <form method="POST" class="comment-form">
+                        <input type="hidden" name="post_id" value="<?= $post_id ?>">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="author_name">Name *</label>
+                                <input type="text" id="author_name" name="author_name" required 
+                                       value="<?= htmlspecialchars($_POST['author_name'] ?? '') ?>">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="author_email">E-Mail * <small>(wird nicht veröffentlicht)</small></label>
+                                <input type="email" id="author_email" name="author_email" required 
+                                       value="<?= htmlspecialchars($_POST['author_email'] ?? '') ?>">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="content">Kommentar *</label>
+                            <textarea id="content" name="content" required rows="4" 
+                                      placeholder="Schreiben Sie hier Ihren Kommentar..."><?= htmlspecialchars($_POST['content'] ?? '') ?></textarea>
+                            <small class="char-counter">Maximal 1000 Zeichen</small>
+                        </div>
+                        
+                        <button type="submit" name="comment_submit" class="btn btn-primary">Kommentar absenden</button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <script>
+        // Character counter for comment textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('content');
+            const counter = document.querySelector('.char-counter');
+            
+            if (textarea && counter) {
+                function updateCounter() {
+                    const remaining = 1000 - textarea.value.length;
+                    counter.textContent = `${remaining} Zeichen übrig`;
+                    counter.style.color = remaining < 50 ? '#dc3545' : '#666';
+                }
+                
+                textarea.addEventListener('input', updateCounter);
+                updateCounter(); // Initial count
+            }
+        });
+        </script>
+        <?php
+        return ob_get_clean();
     }
 }

@@ -6,6 +6,7 @@ class Database {
     
     private function __construct() {
         try {
+            // Produktions-Datenbankverbindung für baukasten.neuhauser.cloud
             $this->pdo = new PDO(
                 "mysql:host=localhost;dbname=sql_baukasten_ne;charset=utf8", 
                 "sql_baukasten_ne", 

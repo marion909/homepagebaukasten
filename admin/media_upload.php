@@ -53,9 +53,9 @@ if (isset($_FILES['media_file']) && $_FILES['media_file']['error'] === UPLOAD_ER
         $db->query($sql, [$filename, $originalName, $mimeType, $fileSize, $filepath, $user['id']]);
         
         // Return the URL for TinyMCE
-        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . 
-                   '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']);
-        $imageUrl = $baseUrl . '/' . $filepath;
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        $imageUrl = $protocol . '://' . $host . '/uploads/' . $filename;
         
         echo json_encode(['success' => true, 'url' => $imageUrl]);
     } else {

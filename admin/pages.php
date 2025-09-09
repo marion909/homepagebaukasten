@@ -159,6 +159,7 @@ $pages = Page::getAll();
             <li><a href="index.php">Dashboard</a></li>
             <li><a href="pages.php" class="active">Seiten</a></li>
             <li><a href="media.php">Medien</a></li>
+            <li><a href="comments.php">Kommentare</a></li>
             <li><a href="settings.php">Einstellungen</a></li>
         </ul>
     </nav>

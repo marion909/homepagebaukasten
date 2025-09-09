@@ -92,6 +92,7 @@ foreach ($settingRows as $row) {
             <li><a href="index.php">Dashboard</a></li>
             <li><a href="pages.php">Seiten</a></li>
             <li><a href="media.php">Medien</a></li>
+            <li><a href="comments.php">Kommentare</a></li>
             <li><a href="settings.php" class="active">Einstellungen</a></li>
         </ul>
     </nav>

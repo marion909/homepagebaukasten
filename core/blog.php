@@ -13,8 +13,8 @@ class Blog {
         $params = [$status];
         
         if ($limit) {
-            $sql .= " LIMIT ?";
-            $params[] = (int)$limit;
+            // LIMIT als Teil der SQL-Query hinzufügen (sicher, da wir (int) casten)
+            $sql .= " LIMIT " . (int)$limit;
         }
         
         return self::$db->fetchAll($sql, $params);

@@ -72,7 +72,7 @@ $site_description = $settings['site_description'] ?? '';
                 <ul>
                     <?php foreach ($nav_pages as $nav_page): ?>
                         <li>
-                            <a href="?page=<?= htmlspecialchars($nav_page['slug']) ?>" 
+                            <a href="/<?= htmlspecialchars($nav_page['slug']) ?>" 
                                <?= $nav_page['slug'] === $page_slug ? 'class="active"' : '' ?>>
                                 <?= htmlspecialchars($nav_page['title']) ?>
                             </a>
