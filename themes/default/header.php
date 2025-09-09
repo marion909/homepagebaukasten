@@ -22,12 +22,16 @@
     <meta name="twitter:title" content="{{title}}">
     <meta name="twitter:description" content="{{description}}">
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/themes/default/style.css">
 </head>
 <body>
 <header>
-    <h1>Baukasten CMS</h1>
-    <nav>
-        <!-- Navigation here -->
-    </nav>
+    <div class="container">
+        <h1>{{site_title}}</h1>
+        <nav>
+            <ul>
+                {{navigation}}
+            </ul>
+        </nav>
+    </div>
 </header>

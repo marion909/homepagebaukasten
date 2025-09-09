@@ -52,8 +52,8 @@ class Page {
     public static function create($data) {
         if (!self::$db) self::init();
         
-        $sql = "INSERT INTO pages (title, slug, content, meta_description, meta_keywords, status, sort_order, created_by) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO pages (title, slug, content, meta_description, meta_keywords, status, sort_order, show_in_nav, menu_order, created_by) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $params = [
             $data['title'],
@@ -63,6 +63,8 @@ class Page {
             $data['meta_keywords'] ?? '',
             $data['status'] ?? 'draft',
             $data['sort_order'] ?? 0,
+            $data['show_in_nav'] ?? 1,
+            $data['menu_order'] ?? 0,
             $data['created_by']
         ];
         
@@ -74,7 +76,7 @@ class Page {
         if (!self::$db) self::init();
         
         $sql = "UPDATE pages SET title = ?, slug = ?, content = ?, meta_description = ?, 
-                meta_keywords = ?, status = ?, sort_order = ? WHERE id = ?";
+                meta_keywords = ?, status = ?, sort_order = ?, show_in_nav = ?, menu_order = ? WHERE id = ?";
         
         $params = [
             $data['title'],
@@ -84,6 +86,8 @@ class Page {
             $data['meta_keywords'] ?? '',
             $data['status'] ?? 'draft',
             $data['sort_order'] ?? 0,
+            $data['show_in_nav'] ?? 1,
+            $data['menu_order'] ?? 0,
             $id
         ];
         

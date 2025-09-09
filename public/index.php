@@ -154,45 +154,43 @@ foreach ($setting_rows as $row) {
 $site_title = $settings['site_title'] ?? 'Baukasten CMS';
 $site_description = $settings['site_description'] ?? '';
 
+// Generate navigation HTML
+$nav_pages = $db->fetchAll("SELECT slug, title FROM pages WHERE status = 'published' AND show_in_nav = 1 ORDER BY menu_order, title");
+$navigation_html = '';
+foreach ($nav_pages as $nav_page) {
+    $active_class = ($page_slug === $nav_page['slug']) ? ' class="active"' : '';
+    $href = ($nav_page['slug'] === 'home') ? '/' : '/' . htmlspecialchars($nav_page['slug']);
+    $navigation_html .= '<li><a href="' . $href . '"' . $active_class . '>' . htmlspecialchars($nav_page['title']) . '</a></li>';
+}
+// Add blog link
+$blog_active = ($page_slug === 'blog') ? ' class="active"' : '';
+$navigation_html .= '<li><a href="/blog"' . $blog_active . '>Blog</a></li>';
+
 // Prepare template variables
 $template_vars = [
     'title' => ($page_data['title'] ?? 'Startseite') . ' - ' . $site_title,
     'description' => $page_data['meta_description'] ?? $site_description,
     'url' => (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
     'site_title' => $site_title,
+    'navigation' => $navigation_html,
     'content' => $page_data['content'] ?? ''
 ];
 
 // Load and process header template
 $header_template = file_get_contents('../themes/default/header.php');
 foreach ($template_vars as $key => $value) {
-    $header_template = str_replace('{{' . $key . '}}', htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $header_template);
+    if ($key === 'navigation') {
+        // Navigation is already safe HTML, don't escape
+        $header_template = str_replace('{{' . $key . '}}', $value, $header_template);
+    } else {
+        $header_template = str_replace('{{' . $key . '}}', htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $header_template);
+    }
 }
 
 echo $header_template;
 ?>
 
 <main class="container">
-    <!-- Dynamic Navigation -->
-    <div class="navigation">
-        <nav>
-            <ul>
-                <?php 
-                $nav_pages = $db->fetchAll("SELECT slug, title FROM pages WHERE status = 'published' AND show_in_nav = 1 ORDER BY menu_order, title");
-                foreach ($nav_pages as $nav_page): 
-                ?>
-                    <li>
-                        <a href="<?= $nav_page['slug'] === 'home' ? '/' : '/' . htmlspecialchars($nav_page['slug']) ?>"
-                           <?= $page_slug === $nav_page['slug'] ? 'class="active"' : '' ?>>
-                            <?= htmlspecialchars($nav_page['title']) ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-                <li><a href="/blog" <?= $page_slug === 'blog' ? 'class="active"' : '' ?>>Blog</a></li>
-            </ul>
-        </nav>
-    </div>
-    
     <!-- Main Content -->
     <div class="content">
         <?= $template_vars['content'] ?>
@@ -203,7 +201,12 @@ echo $header_template;
 // Load and process footer template
 $footer_template = file_get_contents('../themes/default/footer.php');
 foreach ($template_vars as $key => $value) {
-    $footer_template = str_replace('{{' . $key . '}}', htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $footer_template);
+    if ($key === 'navigation') {
+        // Navigation is already safe HTML, don't escape
+        $footer_template = str_replace('{{' . $key . '}}', $value, $footer_template);
+    } else {
+        $footer_template = str_replace('{{' . $key . '}}', htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $footer_template);
+    }
 }
 
 echo $footer_template;

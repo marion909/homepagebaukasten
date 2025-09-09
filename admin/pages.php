@@ -27,6 +27,8 @@ if ($_POST) {
                 $meta_keywords = trim($_POST['meta_keywords'] ?? '');
                 $status = $_POST['status'] ?? 'draft';
                 $sort_order = (int)($_POST['sort_order'] ?? 0);
+                $show_in_nav = isset($_POST['show_in_nav']) ? 1 : 0;
+                $menu_order = (int)($_POST['menu_order'] ?? 0);
                 
                 // Validation
                 if (empty($title)) {
@@ -48,7 +50,9 @@ if ($_POST) {
                             'meta_description' => $meta_description,
                             'meta_keywords' => $meta_keywords,
                             'status' => $status,
-                            'sort_order' => $sort_order
+                            'sort_order' => $sort_order,
+                            'show_in_nav' => $show_in_nav,
+                            'menu_order' => $menu_order
                         ];
                         
                         if ($action === 'new') {
@@ -138,6 +142,9 @@ $pages = Page::getAll();
         .user-info { color: white; }
         .logout { background: #dc3545; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; }
         .logout:hover { background: #c82333; }
+        .nav-visible { color: #28a745; font-weight: bold; }
+        .nav-hidden { color: #dc3545; }
+        .form-group input[type="checkbox"] { width: auto; margin-right: 0.5rem; }
         .form-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
         @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
     </style>
@@ -187,7 +194,8 @@ $pages = Page::getAll();
                             <th>Titel</th>
                             <th>URL-Slug</th>
                             <th>Status</th>
-                            <th>Sortierung</th>
+                            <th>Navigation</th>
+                            <th>Reihenfolge</th>
                             <th>Erstellt</th>
                             <th>Aktionen</th>
                         </tr>
@@ -202,7 +210,12 @@ $pages = Page::getAll();
                                         <?= $page['status'] === 'published' ? 'Veröffentlicht' : 'Entwurf' ?>
                                     </span>
                                 </td>
-                                <td><?= $page['sort_order'] ?></td>
+                                <td>
+                                    <span class="<?= ($page['show_in_nav'] ?? 1) ? 'nav-visible' : 'nav-hidden' ?>">
+                                        <?= ($page['show_in_nav'] ?? 1) ? '✓ Sichtbar' : '✗ Versteckt' ?>
+                                    </span>
+                                </td>
+                                <td><?= $page['menu_order'] ?? 0 ?></td>
                                 <td><?= date('d.m.Y H:i', strtotime($page['created_at'])) ?></td>
                                 <td>
                                     <div class="actions">
@@ -253,6 +266,21 @@ $pages = Page::getAll();
                             <input type="number" id="sort_order" name="sort_order" 
                                    value="<?= htmlspecialchars($pageData['sort_order'] ?? '0') ?>">
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="menu_order">Navigation Reihenfolge</label>
+                            <input type="number" id="menu_order" name="menu_order" 
+                                   value="<?= htmlspecialchars($pageData['menu_order'] ?? '0') ?>"
+                                   placeholder="0 = erste Position">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="show_in_nav" value="1" 
+                                   <?= ($pageData['show_in_nav'] ?? 1) ? 'checked' : '' ?>>
+                            In Navigation anzeigen
+                        </label>
                     </div>
                     
                     <div class="form-group">

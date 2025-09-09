@@ -1,12 +1,24 @@
 # Baukasten CMS - Main .htaccess
 # Security and Performance Configuration
 
-# Redirect all traffic to public folder
 RewriteEngine On
-RewriteCond %{REQUEST_URI} !^/public/
+
+# Allow direct access to static files (CSS, JS, images)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ - [L]
+
+# Allow direct access to specific directories
+RewriteCond %{REQUEST_URI} ^/(themes|uploads|admin)/ [NC]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^(.*)$ - [L]
+
+# Redirect root to home page
+RewriteRule ^$ public/index.php?page=home [L]
+
+# Clean URLs - everything else goes to public/index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ public/$1 [L]
+RewriteRule ^(.*)$ public/index.php?page=$1 [L,QSA]
 
 # Security: Block access to sensitive directories and files
 <Files ~ "^\.">
