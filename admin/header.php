@@ -71,6 +71,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
         
         .nav li { 
             margin: 0; 
+            position: relative;
         }
         
         .nav a { 
@@ -89,6 +90,70 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
         .nav a.active {
             background: #004666;
             border-bottom-color: #007cba;
+        }
+        
+        /* Grouped Navigation Styles */
+        .nav-group {
+            position: relative;
+        }
+        
+        .nav-group-label {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #004666;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-group:hover .nav-group-label {
+            background: #003d5c;
+        }
+        
+        .nav-submenu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #004666;
+            min-width: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            flex-direction: column;
+        }
+        
+        .nav-group:hover .nav-submenu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .nav-submenu li {
+            width: 100%;
+        }
+        
+        .nav-submenu a {
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #005a87;
+            font-size: 0.9rem;
+            border-bottom-width: 0;
+        }
+        
+        .nav-submenu a:hover {
+            background: #003d5c;
+            padding-left: 2rem;
+        }
+        
+        .nav-submenu a.active {
+            background: #007cba;
+            border-bottom-color: transparent;
         }
         
         .container { 
@@ -302,6 +367,40 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                 flex-direction: column;
             }
             
+            .nav-group {
+                width: 100%;
+            }
+            
+            .nav-submenu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                box-shadow: none;
+                background: #003d5c;
+                display: none;
+            }
+            
+            .nav-group:hover .nav-submenu {
+                display: block;
+            }
+            
+            .nav-group-label {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .nav-group-label::after {
+                content: '▼';
+                font-size: 0.8rem;
+                transition: transform 0.3s;
+            }
+            
+            .nav-group:hover .nav-group-label::after {
+                transform: rotate(180deg);
+            }
+            
             .container {
                 padding: 0 1rem;
             }
@@ -381,21 +480,57 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     
     <nav class="nav">
         <ul>
-            <li><a href="index.php" class="<?= $currentPage === 'index' ? 'active' : '' ?>">Dashboard</a></li>
-            <li><a href="pages.php" class="<?= $currentPage === 'pages' ? 'active' : '' ?>">Seiten</a></li>
-            <li><a href="blog.php" class="<?= $currentPage === 'blog' ? 'active' : '' ?>">Blog</a></li>
-            <li><a href="content-blocks.php" class="<?= $currentPage === 'content-blocks' ? 'active' : '' ?>">Content-Blöcke</a></li>
-            <li><a href="forms.php" class="<?= $currentPage === 'forms' ? 'active' : '' ?>">Formulare</a></li>
-            <li><a href="media.php" class="<?= $currentPage === 'media' ? 'active' : '' ?>">Medien</a></li>
-            <?php if ($auth->canManageComments()): ?>
-            <li><a href="comments.php" class="<?= $currentPage === 'comments' ? 'active' : '' ?>">Kommentare</a></li>
-            <?php endif; ?>
-            <?php if ($auth->canManageUsers()): ?>
-            <li><a href="users.php" class="<?= $currentPage === 'users' ? 'active' : '' ?>">Benutzer</a></li>
-            <?php endif; ?>
+            <li><a href="index.php" class="<?= $currentPage === 'index' ? 'active' : '' ?>">📊 Dashboard</a></li>
+            
+            <!-- Content Management -->
+            <li class="nav-group">
+                <span class="nav-group-label">Content</span>
+                <ul class="nav-submenu">
+                    <li><a href="pages.php" class="<?= $currentPage === 'pages' ? 'active' : '' ?>">Seiten</a></li>
+                    <li><a href="blog.php" class="<?= $currentPage === 'blog' ? 'active' : '' ?>">Blog</a></li>
+                    <li><a href="content-blocks.php" class="<?= $currentPage === 'content-blocks' ? 'active' : '' ?>">Content-Blöcke</a></li>
+                    <li><a href="content-manager.php" class="<?= $currentPage === 'content-manager' ? 'active' : '' ?>">Content Manager</a></li>
+                </ul>
+            </li>
+            
+            <!-- Tools & Features -->
+            <li class="nav-group">
+                <span class="nav-group-label">Tools</span>
+                <ul class="nav-submenu">
+                    <li><a href="forms.php" class="<?= $currentPage === 'forms' ? 'active' : '' ?>">Formulare</a></li>
+                    <li><a href="media.php" class="<?= $currentPage === 'media' ? 'active' : '' ?>">Medien</a></li>
+                    <?php if ($auth->canManageComments()): ?>
+                    <li><a href="comments.php" class="<?= $currentPage === 'comments' ? 'active' : '' ?>">Kommentare</a></li>
+                    <?php endif; ?>
+                </ul>
+            </li>
+            
+            <!-- Advanced Features -->
             <?php if ($auth->canManageSystem()): ?>
-            <li><a href="seo.php" class="<?= $currentPage === 'seo' ? 'active' : '' ?>">SEO</a></li>
-            <li><a href="settings.php" class="<?= $currentPage === 'settings' ? 'active' : '' ?>">Einstellungen</a></li>
+            <li class="nav-group">
+                <span class="nav-group-label">Advanced</span>
+                <ul class="nav-submenu">
+                    <li><a href="plugins.php" class="<?= $currentPage === 'plugins' ? 'active' : '' ?>">🔌 Plugins</a></li>
+                    <li><a href="seo-tools.php" class="<?= $currentPage === 'seo-tools' ? 'active' : '' ?>">🔍 SEO Tools</a></li>
+                    <li><a href="seo.php" class="<?= $currentPage === 'seo' ? 'active' : '' ?>">SEO</a></li>
+                    <li><a href="migration.php" class="<?= $currentPage === 'migration' ? 'active' : '' ?>" style="color: #ffc107;">🚀 Migration</a></li>
+                </ul>
+            </li>
+            <?php endif; ?>
+            
+            <!-- Administration -->
+            <?php if ($auth->canManageUsers() || $auth->canManageSystem()): ?>
+            <li class="nav-group">
+                <span class="nav-group-label">Admin</span>
+                <ul class="nav-submenu">
+                    <?php if ($auth->canManageUsers()): ?>
+                    <li><a href="users.php" class="<?= $currentPage === 'users' ? 'active' : '' ?>">Benutzer</a></li>
+                    <?php endif; ?>
+                    <?php if ($auth->canManageSystem()): ?>
+                    <li><a href="settings.php" class="<?= $currentPage === 'settings' ? 'active' : '' ?>">Einstellungen</a></li>
+                    <?php endif; ?>
+                </ul>
+            </li>
             <?php endif; ?>
         </ul>
     </nav>

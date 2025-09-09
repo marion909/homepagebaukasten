@@ -1,11 +1,13 @@
 <?php
-require_once '../core/config.php';
-require_once '../core/Database.php';
-require_once '../core/Auth.php';
+require_once '../config.php';
+require_once '../core/db.php';
+require_once '../core/auth.php';
+require_once '../core/Settings.php';
 require_once '../core/ContentManager.php';
 
 // Authentifizierung prüfen
-Auth::requireAuth();
+$auth = new Auth();
+$auth->requireLogin();
 
 $contentManager = new ContentManager();
 $action = $_GET['action'] ?? 'overview';
@@ -320,10 +322,10 @@ include 'header.php';
                         <div class="template-card">
                             <div class="template-header">
                                 <h4><?= htmlspecialchars($template['name']) ?></h4>
-                                <span class="template-type"><?= ucfirst($template['content_type']) ?></span>
+                                <span class="template-type"><?= ucfirst($template['type'] ?? 'page') ?></span>
                             </div>
                             <div class="template-description">
-                                <?= htmlspecialchars($template['description']) ?>
+                                <?= htmlspecialchars($template['description'] ?? '') ?>
                             </div>
                             <div class="template-actions">
                                 <button class="btn btn-primary" onclick="createFromTemplate('<?= $template['id'] ?>')">

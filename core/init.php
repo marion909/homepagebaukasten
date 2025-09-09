@@ -14,3 +14,7 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/user.php';
 require_once __DIR__ . '/content-block.php';
 require_once __DIR__ . '/form-builder.php';
+require_once __DIR__ . '/PluginManager.php';
+require_once __DIR__ . '/ContentManager.php';
+require_once __DIR__ . '/SEOTools.php';
+require_once __DIR__ . '/UserManager.php';

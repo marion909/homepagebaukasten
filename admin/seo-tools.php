@@ -1,12 +1,13 @@
 <?php
-require_once '../core/config.php';
-require_once '../core/Database.php';
-require_once '../core/Auth.php';
+require_once '../config.php';
+require_once '../core/db.php';
+require_once '../core/auth.php';
 require_once '../core/Settings.php';
 require_once '../core/SEOTools.php';
 
 // Authentifizierung prüfen
-Auth::requireAuth();
+$auth = new Auth();
+$auth->requireLogin();
 
 $seoTools = new SEOTools();
 $action = $_GET['action'] ?? 'overview';
