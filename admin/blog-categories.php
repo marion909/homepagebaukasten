@@ -91,98 +91,68 @@ $categories = [];
 if ($action === 'list') {
     $categories = BlogCategory::getWithPostCount();
 }
+
+$pageTitle = "Blog-Kategorien";
+$currentPage = "blog";
+include 'header.php';
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog-Kategorien - Baukasten CMS</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-        .header { background: #007cba; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .nav { background: #005a87; padding: 0; }
-        .nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
-        .nav li { margin: 0; }
-        .nav a { display: block; padding: 1rem 1.5rem; color: white; text-decoration: none; }
-        .nav a:hover, .nav a.active { background: #004666; }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
-        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .form-group textarea { height: 100px; resize: vertical; }
-        .btn { background: #007cba; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 0.5rem; }
-        .btn:hover { background: #005a87; }
-        .btn-secondary { background: #6c757d; }
-        .btn-secondary:hover { background: #5a6268; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #c82333; }
-        .btn-small { padding: 0.5rem 1rem; font-size: 0.9rem; }
-        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        .table th, .table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6; }
-        .table th { background: #f8f9fa; font-weight: bold; }
-        .table tr:hover { background: #f8f9fa; }
-        .actions { display: flex; gap: 0.5rem; }
-        .message { background: #d4edda; color: #155724; padding: 1rem; border: 1px solid #c3e6cb; border-radius: 4px; margin-bottom: 1rem; }
-        .error { background: #f8d7da; color: #721c24; padding: 1rem; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 1rem; }
-        .user-info { color: white; }
-        .logout { background: #dc3545; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; }
-        .logout:hover { background: #c82333; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .page-header h2 { margin: 0; }
-        .badge { background: #6c757d; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; }
-        .slug-preview { font-family: monospace; background: #f8f9fa; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.9rem; color: #666; margin-top: 0.25rem; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Baukasten CMS</h1>
-        <div class="user-info">
-            Willkommen, <?= htmlspecialchars($user['username']) ?> 
-            <a href="logout.php" class="logout">Abmelden</a>
-        </div>
+
+<style>
+    .badge { 
+        background: #6c757d; 
+        color: white; 
+        padding: 0.25rem 0.5rem; 
+        border-radius: 12px; 
+        font-size: 0.75rem; 
+    }
+    .slug-preview { 
+        font-family: monospace; 
+        background: #f8f9fa; 
+        padding: 0.25rem 0.5rem; 
+        border-radius: 4px; 
+        font-size: 0.9rem; 
+        color: #666; 
+        margin-top: 0.25rem; 
+    }
+    .category-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    .stat-item {
+        background: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<?php if ($message): ?>
+    <div class="message"><?= htmlspecialchars($message) ?></div>
+<?php endif; ?>
+
+<?php if ($error): ?>
+    <div class="error"><?= htmlspecialchars($error) ?></div>
+<?php endif; ?>
+
+<?php if ($action === 'list'): ?>
+    <div class="page-header">
+        <h2>📁 Blog-Kategorien</h2>
+        <a href="blog-categories.php?action=new" class="btn">Neue Kategorie</a>
     </div>
     
-    <nav class="nav">
-        <ul>
-            <li><a href="index.php">Dashboard</a></li>
-            <li><a href="pages.php">Seiten</a></li>
-            <li><a href="blog.php" class="active">Blog</a></li>
-            <li><a href="media.php">Medien</a></li>
-            <li><a href="comments.php">Kommentare</a></li>
-            <li><a href="seo.php">SEO & Feeds</a></li>
-            <li><a href="settings.php">Einstellungen</a></li>
-        </ul>
-    </nav>
-    
-    <div class="container">
-        <?php if ($message): ?>
-            <div class="message"><?= htmlspecialchars($message) ?></div>
-        <?php endif; ?>
-        
-        <?php if ($error): ?>
-            <div class="error"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-        
-        <?php if ($action === 'list'): ?>
-            <div class="page-header">
-                <h2>Blog-Kategorien</h2>
-                <a href="blog-categories.php?action=new" class="btn">Neue Kategorie</a>
-            </div>
-            
-            <div class="card">
-                <?php if (empty($categories)): ?>
-                    <p>Noch keine Kategorien vorhanden. <a href="blog-categories.php?action=new">Erstellen Sie die erste Kategorie</a>.</p>
-                <?php else: ?>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Slug</th>
-                                <th>Beschreibung</th>
-                                <th>Beiträge</th>
-                                <th>Aktionen</th>
+    <div class="card">
+        <?php if (empty($categories)): ?>
+            <p>Noch keine Kategorien vorhanden. <a href="blog-categories.php?action=new">Erstellen Sie die erste Kategorie</a>.</p>
+        <?php else: ?>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Slug</th>
+                        <th>Beschreibung</th>
+                        <th>Beiträge</th>
+                        <th>Aktionen</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -305,5 +275,5 @@ if ($action === 'list') {
             }
         });
     </script>
-</body>
-</html>
+
+<?php include 'footer.php'; ?>

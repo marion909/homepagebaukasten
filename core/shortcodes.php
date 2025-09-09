@@ -15,6 +15,8 @@ class Shortcodes {
         $content = preg_replace_callback('/\[blog_comments(?:\s+post_id="(\d+)")?\]/', [self::class, 'blogComments'], $content);
         $content = preg_replace_callback('/\[blog_categories\]/', [self::class, 'blogCategoriesList'], $content);
         $content = preg_replace_callback('/\[blog_tags(?:\s+limit="(\d+)")?\]/', [self::class, 'blogTagCloud'], $content);
+        $content = preg_replace_callback('/\[content_block\s+key="([^"]+)"(?:\s+default="([^"]*)")?\]/', [self::class, 'contentBlock'], $content);
+        $content = preg_replace_callback('/\[custom_form\s+key="([^"]+)"(?:\s+class="([^"]*)")?\]/', [self::class, 'customForm'], $content);
         
         return $content;
     }
@@ -391,5 +393,35 @@ class Shortcodes {
         </div>
         <?php
         return ob_get_clean();
+    }
+    
+    public static function contentBlock($matches) {
+        $key = $matches[1];
+        $default = $matches[2] ?? '';
+        
+        return ContentBlock::render($key, $default);
+    }
+    
+    public static function customForm($matches) {
+        $key = $matches[1];
+        $cssClass = $matches[2] ?? '';
+        
+        // Handle form submission
+        if ($_POST && isset($_POST['form_submission']) && $_POST['form_key'] === $key) {
+            try {
+                if (!FormBuilder::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                    throw new Exception('Ungültiger CSRF-Token');
+                }
+                
+                FormBuilder::handleSubmission($key, $_POST);
+                return '<div class="success">Formular erfolgreich übermittelt! Vielen Dank.</div>';
+                
+            } catch (Exception $e) {
+                return '<div class="error">' . htmlspecialchars($e->getMessage()) . '</div>' . 
+                       FormBuilder::renderForm($key, $cssClass);
+            }
+        }
+        
+        return FormBuilder::renderForm($key, $cssClass);
     }
 }

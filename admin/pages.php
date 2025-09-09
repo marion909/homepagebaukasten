@@ -28,7 +28,6 @@ if ($_POST) {
                 $status = $_POST['status'] ?? 'draft';
                 $sort_order = (int)($_POST['sort_order'] ?? 0);
                 $show_in_nav = isset($_POST['show_in_nav']) ? 1 : 0;
-                $menu_order = (int)($_POST['menu_order'] ?? 0);
                 
                 // Validation
                 if (empty($title)) {
@@ -51,8 +50,7 @@ if ($_POST) {
                             'meta_keywords' => $meta_keywords,
                             'status' => $status,
                             'sort_order' => $sort_order,
-                            'show_in_nav' => $show_in_nav,
-                            'menu_order' => $menu_order
+                            'show_in_nav' => $show_in_nav
                         ];
                         
                         if ($action === 'new') {
@@ -100,79 +98,14 @@ if ($action === 'edit' && $id) {
 
 // Get all pages for listing
 $pages = Page::getAll();
+
+$pageTitle = "Seitenverwaltung";
+$currentPage = "pages";
+include 'header.php';
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seitenverwaltung - Baukasten CMS</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-        .header { background: #007cba; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .nav { background: #005a87; padding: 0; }
-        .nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
-        .nav li { margin: 0; }
-        .nav a { display: block; padding: 1rem 1.5rem; color: white; text-decoration: none; }
-        .nav a:hover, .nav a.active { background: #004666; }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
-        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .form-group textarea { height: 200px; resize: vertical; }
-        .form-group textarea#content { height: 400px; }
-        .btn { background: #007cba; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn:hover { background: #005a87; }
-        .btn-secondary { background: #6c757d; }
-        .btn-secondary:hover { background: #545b62; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #c82333; }
-        .btn-small { padding: 0.5rem 1rem; font-size: 0.9rem; }
-        .message { background: #d4edda; color: #155724; padding: 1rem; border: 1px solid #c3e6cb; border-radius: 4px; margin-bottom: 1rem; }
-        .error { background: #f8d7da; color: #721c24; padding: 1rem; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 1rem; }
-        .table { width: 100%; border-collapse: collapse; }
-        .table th, .table td { padding: 0.75rem; border-bottom: 1px solid #ddd; text-align: left; }
-        .table th { background: #f8f9fa; font-weight: bold; }
-        .table tr:hover { background: #f8f9fa; }
-        .status { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; }
-        .status-published { background: #d4edda; color: #155724; }
-        .status-draft { background: #fff3cd; color: #856404; }
-        .actions { display: flex; gap: 0.5rem; }
-        .user-info { color: white; }
-        .logout { background: #dc3545; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; }
-        .logout:hover { background: #c82333; }
-        .nav-visible { color: #28a745; font-weight: bold; }
-        .nav-hidden { color: #dc3545; }
-        .form-group input[type="checkbox"] { width: auto; margin-right: 0.5rem; }
-        .form-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
-        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
-    </style>
-    
-    <!-- TinyMCE Editor -->
-    <script src="https://cdn.tiny.cloud/1/<?php echo TINYMCE_API_KEY; ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-</head>
-<body>
-    <div class="header">
-        <h1>Baukasten CMS</h1>
-        <div class="user-info">
-            Willkommen, <?= htmlspecialchars($user['username']) ?> 
-            <a href="logout.php" class="logout">Abmelden</a>
-        </div>
-    </div>
-    
-    <nav class="nav">
-        <ul>
-            <li><a href="index.php">Dashboard</a></li>
-            <li><a href="pages.php" class="active">Seiten</a></li>
-            <li><a href="media.php">Medien</a></li>
-            <li><a href="comments.php">Kommentare</a></li>
-            <li><a href="seo.php">SEO & Feeds</a></li>
-            <li><a href="settings.php">Einstellungen</a></li>
-        </ul>
-    </nav>
-    
-    <div class="container">
+
+<!-- TinyMCE Editor -->
+<script src="https://cdn.tiny.cloud/1/<?php echo TINYMCE_API_KEY; ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
         <?php if ($message): ?>
             <div class="message"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
@@ -215,7 +148,7 @@ $pages = Page::getAll();
                                         <?= ($page['show_in_nav'] ?? 1) ? '✓ Sichtbar' : '✗ Versteckt' ?>
                                     </span>
                                 </td>
-                                <td><?= $page['menu_order'] ?? 0 ?></td>
+                                <td><?= $page['sort_order'] ?? 0 ?></td>
                                 <td><?= date('d.m.Y H:i', strtotime($page['created_at'])) ?></td>
                                 <td>
                                     <div class="actions">
@@ -262,15 +195,9 @@ $pages = Page::getAll();
                         </div>
                         
                         <div class="form-group">
-                            <label for="sort_order">Sortierung</label>
+                            <label for="sort_order">Navigation Reihenfolge</label>
                             <input type="number" id="sort_order" name="sort_order" 
-                                   value="<?= htmlspecialchars($pageData['sort_order'] ?? '0') ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="menu_order">Navigation Reihenfolge</label>
-                            <input type="number" id="menu_order" name="menu_order" 
-                                   value="<?= htmlspecialchars($pageData['menu_order'] ?? '0') ?>"
+                                   value="<?= htmlspecialchars($pageData['sort_order'] ?? '0') ?>"
                                    placeholder="0 = erste Position">
                         </div>
                     </div>
@@ -391,5 +318,5 @@ $pages = Page::getAll();
             this.dataset.auto = 'false';
         });
     </script>
-</body>
-</html>
+
+<?php include 'footer.php'; ?>

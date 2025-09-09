@@ -54,6 +54,49 @@ class Auth {
         return isset($_SESSION['role']) && $_SESSION['role'] === $role;
     }
     
+    public function hasAnyRole($roles) {
+        if (!isset($_SESSION['role'])) return false;
+        return in_array($_SESSION['role'], $roles);
+    }
+    
+    public function canManagePages() {
+        return $this->hasAnyRole(['admin', 'editor', 'moderator']);
+    }
+    
+    public function canManageUsers() {
+        return $this->hasRole('admin');
+    }
+    
+    public function canManageComments() {
+        return $this->hasAnyRole(['admin', 'moderator']);
+    }
+    
+    public function canPublishPosts() {
+        return $this->hasAnyRole(['admin', 'editor']);
+    }
+    
+    public function canManageBlog() {
+        return $this->hasAnyRole(['admin', 'editor']);
+    }
+    
+    public function canManageSystem() {
+        return $this->hasRole('admin');
+    }
+    
+    public function requireRole($role) {
+        if (!$this->hasRole($role)) {
+            header('HTTP/1.1 403 Forbidden');
+            die('Zugriff verweigert. Erforderliche Rolle: ' . $role);
+        }
+    }
+    
+    public function requireAnyRole($roles) {
+        if (!$this->hasAnyRole($roles)) {
+            header('HTTP/1.1 403 Forbidden');
+            die('Zugriff verweigert. Erforderliche Rollen: ' . implode(', ', $roles));
+        }
+    }
+    
     public function generateCSRFToken() {
         if (!isset($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

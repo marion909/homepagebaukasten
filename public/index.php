@@ -155,7 +155,7 @@ $site_title = $settings['site_title'] ?? 'Baukasten CMS';
 $site_description = $settings['site_description'] ?? '';
 
 // Generate navigation HTML
-$nav_pages = $db->fetchAll("SELECT slug, title FROM pages WHERE status = 'published' AND show_in_nav = 1 ORDER BY menu_order, title");
+$nav_pages = $db->fetchAll("SELECT slug, title FROM pages WHERE status = 'published' AND show_in_nav = 1 ORDER BY sort_order ASC, title");
 $navigation_html = '';
 $blog_in_nav = false;
 
@@ -200,10 +200,12 @@ foreach ($template_vars as $key => $value) {
 echo $header_template;
 ?>
 
-<main class="container">
-    <!-- Main Content -->
-    <div class="content">
-        <?= $template_vars['content'] ?>
+<main class="main-content">
+    <div class="container">
+        <!-- Main Content -->
+        <div class="content fade-in">
+            <?= $template_vars['content'] ?>
+        </div>
     </div>
 </main>
 

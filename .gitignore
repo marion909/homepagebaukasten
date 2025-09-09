@@ -1,3 +1,111 @@
+# Homepage Baukasten CMS - Git Ignore
+
+# Konfigurationsdateien
+config.php
+.installed
+
+# Upload-Verzeichnisse
+uploads/*
+!uploads/.gitkeep
+media/*
+!media/.gitkeep
+
+# Backup-Dateien
+backups/*
+!backups/.gitkeep
+*.backup
+*.sql.gz
+
+# Cache-Dateien
+cache/*
+!cache/.gitkeep
+tmp/*
+!tmp/.gitkeep
+
+# Log-Dateien
+logs/*
+!logs/.gitkeep
+*.log
+error.log
+access.log
+
+# Session-Dateien
+sessions/*
+!sessions/.gitkeep
+
+# IDE-Dateien
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Betriebssystem-Dateien
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Node.js (falls verwendet)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Composer (falls verwendet)
+vendor/
+composer.lock
+
+# Temporäre Dateien
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Entwicklungs-Dateien
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Sicherheitsdateien
+private_keys/
+certificates/
+*.pem
+*.key
+*.crt
+
+# Datenbank-Dumps
+*.sql
+!install/*.sql
+
+# Webserver-Konfiguration (lokale Anpassungen)
+.htaccess.local
+nginx.conf.local
+
+# Dokumentations-Build
+docs/_build/
+docs/.doctrees/
+
+# Test-Coverage
+coverage/
+*.coverage
+
+# Paket-Archive
+*.zip
+*.tar.gz
+*.rar
+
+# Entwickler-Notizen
+TODO.md
+NOTES.md
+dev-notes.txt
+
+# Legacy
 roadmap.md
-uploads/
 database.sql

@@ -22,16 +22,36 @@
     <meta name="twitter:title" content="{{title}}">
     <meta name="twitter:description" content="{{description}}">
     
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
     <link rel="stylesheet" href="/themes/default/style.css">
 </head>
 <body>
-<header>
-    <div class="container">
-        <h1>{{site_title}}</h1>
-        <nav>
-            <ul>
-                {{navigation}}
-            </ul>
-        </nav>
-    </div>
-</header>
+    <!-- Hero Section for Homepage -->
+    <div class="hero-gradient"></div>
+    
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1 class="site-logo">
+                        <i class="fas fa-cube"></i>
+                        {{site_title}}
+                    </h1>
+                </div>
+                
+                <nav class="main-navigation">
+                    <button class="mobile-menu-toggle" aria-label="Menü öffnen">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-menu">
+                        {{navigation}}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
