@@ -1,0 +1,2 @@
+<?php
+// Gallery module placeholder
