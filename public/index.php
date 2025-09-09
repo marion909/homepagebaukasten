@@ -157,14 +157,24 @@ $site_description = $settings['site_description'] ?? '';
 // Generate navigation HTML
 $nav_pages = $db->fetchAll("SELECT slug, title FROM pages WHERE status = 'published' AND show_in_nav = 1 ORDER BY menu_order, title");
 $navigation_html = '';
+$blog_in_nav = false;
+
 foreach ($nav_pages as $nav_page) {
     $active_class = ($page_slug === $nav_page['slug']) ? ' class="active"' : '';
     $href = ($nav_page['slug'] === 'home') ? '/' : '/' . htmlspecialchars($nav_page['slug']);
     $navigation_html .= '<li><a href="' . $href . '"' . $active_class . '>' . htmlspecialchars($nav_page['title']) . '</a></li>';
+    
+    // Check if blog is already in navigation
+    if ($nav_page['slug'] === 'blog') {
+        $blog_in_nav = true;
+    }
 }
-// Add blog link
-$blog_active = ($page_slug === 'blog') ? ' class="active"' : '';
-$navigation_html .= '<li><a href="/blog"' . $blog_active . '>Blog</a></li>';
+
+// Add blog link only if it's not already in the navigation from database
+if (!$blog_in_nav) {
+    $blog_active = ($page_slug === 'blog') ? ' class="active"' : '';
+    $navigation_html .= '<li><a href="/blog"' . $blog_active . '>Blog</a></li>';
+}
 
 // Prepare template variables
 $template_vars = [
